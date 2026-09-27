@@ -1,0 +1,29 @@
+[theme]
+
+base = "dark"
+
+primaryColor = "#14B8A6"
+
+backgroundColor = "#090C11"
+
+secondaryBackgroundColor = "#11161D"
+
+textColor = "#F3F5F7"
+
+linkColor = "#5EEAD4"
+
+borderColor = "#252C35"
+
+greenColor = "#34D399"
+
+yellowColor = "#F4C15D"
+
+redColor = "#F07178"
+
+font = "sans-serif"
+
+baseRadius = "0.8rem"
+
+buttonRadius = "0.65rem"
+
+showWidgetBorder = true
