@@ -6,9 +6,7 @@ from langgraph.graph import (
 
 import sqlite3
 from pathlib import Path
-
 from langgraph.checkpoint.sqlite import SqliteSaver
-
 from .state import ResearchState
 
 from .nodes import (
@@ -31,9 +29,7 @@ builder = StateGraph(
 )
 
 
-# -------------------------------------------
-# Nodes
-# -------------------------------------------
+#Nodes
 
 builder.add_node(
     "planner",
@@ -81,9 +77,7 @@ builder.add_node(
 )
 
 
-# -------------------------------------------
-# Normal edges
-# -------------------------------------------
+#edges
 
 builder.add_edge(
     START,
@@ -125,11 +119,6 @@ builder.add_edge(
     "reviewer",
 )
 
-
-# -------------------------------------------
-# Conditional edge
-# -------------------------------------------
-
 builder.add_conditional_edges(
     "reviewer",
     review_router,
@@ -139,7 +128,6 @@ builder.add_conditional_edges(
         "max_revisions": "max_revisions",
     },
 )
-
 
 builder.add_edge(
     "human_approval",
@@ -151,9 +139,8 @@ builder.add_edge(
     "human_approval",
 )
 
-# -------------------------------------------
-# Persistent checkpointing
-# -------------------------------------------
+#Persistent checkpointing
+
 
 DB_PATH = (
     Path(__file__).resolve().parent.parent

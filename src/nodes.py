@@ -1,12 +1,9 @@
 import json
-
 from langchain_core.messages import ToolMessage
-
 from datetime import date
 
 from .state import ResearchState
 from langgraph.types import interrupt
-
 from .agent import llm
 
 from .schemas import (
@@ -19,19 +16,24 @@ from .schemas import (
 from .tools import search_web
 
 
-
-
-def planner_node(state: ResearchState):
+def planner_node(
+    state: ResearchState,
+):
+    """
+    Convert the user's research objective
+    into a focused market research plan.
+    """
 
     topic = state["topic"]
-
-    structured_planner = llm.with_structured_output(
-        ResearchPlan,
-        method="function_calling",
+    structured_planner = (
+        llm.with_structured_output(
+            ResearchPlan,
+            method="function_calling",
+        )
     )
 
     prompt = f"""
-You are a market research planner.
+You are a senior market research planner.
 
 Current date:
 {date.today().isoformat()}
@@ -39,32 +41,59 @@ Current date:
 Research objective:
 {topic}
 
-Create a focused research plan.
+Create a focused market research plan for this objective.
 
 Break the objective into 4 to 6 research tasks.
 
-Cover the most relevant areas such as:
+The tasks should collectively cover the most relevant
+areas for the specific market being researched.
 
-- market size and growth
-- industry trends
-- competitors
-- customer needs
-- pricing or business models
-- risks and barriers
-- market opportunities
+Possible areas include:
 
-Do not perform the research.
+- market size, growth, and outlook
+- important market and consumer trends
+- customer needs, behavior, and adoption
+- key competitors and competitive positioning
+- pricing and business models
+- distribution or sales channels
+- regulatory requirements
+- operational barriers and risks
+- market-entry opportunities
 
-Only create the research plan.
+Rules:
+
+- Keep every task specific to the research objective.
+- Avoid duplicate or overlapping tasks.
+- Do not perform the research.
+- Do not invent market findings or statistics.
+- Do not request primary interviews or surveys.
+- Focus on questions that can realistically be
+  investigated using public web research.
+- Return only the structured research plan.
 """
 
     plan = structured_planner.invoke(
         prompt
     )
 
+    if plan is None:
+
+        raise ValueError(
+            "Planner returned no structured "
+            "research plan."
+        )
+
+    if not plan.tasks:
+
+        raise ValueError(
+            "Planner returned an empty "
+            "research plan."
+        )
+
     return {
         "research_plan": plan.tasks,
         "iteration": 0,
+        "research_round": 0,
     }
 
 
@@ -82,10 +111,6 @@ def researcher_node(state: ResearchState):
     )
 
 
-    # ==================================================
-    # STEP 1
-    # Generate a bounded search plan
-    # ==================================================
 
     structured_query_planner = (
         llm.with_structured_output(
@@ -136,11 +161,6 @@ Only produce the search-query plan.
     )
 
 
-    # ==================================================
-    # STEP 2
-    # Execute searches deterministically
-    # ==================================================
-
     evidence = []
 
     for query in query_plan.queries:
@@ -172,11 +192,6 @@ Only produce the search-query plan.
         )
 
 
-    # ==================================================
-    # STEP 3
-    # Remove duplicate URLs
-    # ==================================================
-
     unique_evidence = {}
 
     for item in evidence:
@@ -198,11 +213,6 @@ Only produce the search-query plan.
     )
 
 
-    # ==================================================
-    # STEP 4
-    # Format evidence
-    # ==================================================
-
     evidence_text = "\n\n".join(
         f"""
 SOURCE {i}
@@ -223,10 +233,6 @@ Evidence:
     )
 
 
-    # ==================================================
-    # STEP 5
-    # Synthesize the collected evidence
-    # ==================================================
 
     synthesis_prompt = f"""
 You are a senior market researcher.
@@ -498,9 +504,6 @@ def supplemental_research_node(
         }
 
 
-    # --------------------------------------
-    # Remove duplicate URLs
-    # --------------------------------------
 
     unique_evidence = {}
 

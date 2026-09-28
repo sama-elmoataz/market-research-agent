@@ -1,9 +1,7 @@
 import json
-
 from langchain.tools import tool
 from langsmith import traceable
 from tavily import TavilyClient
-
 from .config import TAVILY_API_KEY
 
 

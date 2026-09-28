@@ -1,7 +1,5 @@
 import uuid
-
 from langgraph.types import Command
-
 from .graph import research_graph
 
 
@@ -134,10 +132,6 @@ def main():
     },
 }
 
-    # ==================================================
-    # NEW RESEARCH RUN
-    # ==================================================
-
     if mode == "new":
         topic = input(
             "Enter a market research objective: "
@@ -189,9 +183,6 @@ def main():
 
         return
 
-    # ==================================================
-    # RESUME EXISTING RUN
-    # ==================================================
 
     snapshot = research_graph.get_state(
         config
@@ -214,9 +205,6 @@ def main():
         snapshot.next,
     )
 
-    # ==================================================
-    # ALREADY FINISHED
-    # ==================================================
 
     if not snapshot.next:
         print(
@@ -230,9 +218,6 @@ def main():
 
         return
 
-    # ==================================================
-    # WAITING FOR HUMAN APPROVAL
-    # ==================================================
 
     if "human_approval" in snapshot.next:
         print(
@@ -276,9 +261,6 @@ def main():
 
         return
 
-    # ==================================================
-    # RESUME NORMAL WORKFLOW
-    # ==================================================
 
     print(
         "\nResuming workflow from "
